@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import operator # for operator.gt() and operator.lt()
 import os.path # for os.path.isfile()
 import sys # for command line args
