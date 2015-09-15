@@ -1,0 +1,12 @@
+DEF		counter, 0
+DEF		first, 1
+DEF		second, 1
+PRINT	first
+PRINT	second
+LOOP 	counter, 10, (ADD counter, counter, 1)
+ADD		fib, first, second
+PRINT	fib
+MOV		first, second
+MOV		second, fib
+END
+EXIT

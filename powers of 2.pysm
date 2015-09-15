@@ -1,0 +1,6 @@
+DEF		counter, 0
+LOOP	counter, 8, (ADD counter, counter, 1)
+EXP		num, 2, counter
+PRINT	num
+END
+EXIT
