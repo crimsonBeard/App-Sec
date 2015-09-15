@@ -139,8 +139,10 @@ def evaluate(command):
 
             actions = []
             # get the next command in the loop and add it to an array
-            while (command = in_method()) != 'END':
+            command = in_method()
+            while command != 'END':
                 actions.append(command)
+                command = in_method()
 
             # perform the loop
             loop(counter = tokens[1], until = tokens[2], step = step, actions = actions)
