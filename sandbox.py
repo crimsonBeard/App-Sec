@@ -177,10 +177,12 @@ def main(argv):
         in_method = next_line
         
         # read the program line-by-line until 'EXIT' is hit
-        while (command = fd.readline()) != 'EXIT':
+        command = fd.readline()
+        while command != 'EXIT':
             # evaluate the line; if `None` is returned terminate the program
             if evaluate(command) == None:
                 break
+            command = fd.readline()
     else:
         print 'Input HELP to see the command list.'
 
