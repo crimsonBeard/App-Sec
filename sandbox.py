@@ -2,24 +2,28 @@
 
 import operator # for operator.gt() and operator.lt()
 import os.path # for os.path.isfile()
+import re # for re.split()
 import sys # for command line args
 
 variables = {} # program variables
 
 # -------------MATH-------------
-# return the number (int or float) representation of the string or `None` if the variable doesn't exist
+# return the number (int or float) representation of the string or `None`
+# if the variable doesn't exist
 def get_number(num):
     try:
         return float(num) if '.' in num else int(num)
     except ValueError:
         try: # a variable name may have been passed in
             x = variables[num]
-            return get_number(x) # going deeper down the rabbit hole will fix any problems... right?
+            return get_number(x) # going deeper down the rabbit hole will 
+                                 # fix any problems... right?
         except KeyError: # the variable doesn't exist
             print 'The variable "{0}" does not exist.'.format(num)
             return None
 
-# the rest of the math functions return strings because it's easier to save all the 'variables' as one type
+# the rest of the math functions return strings because it's easier to save
+# all the 'variables' as one type
 
 def add(num1, num2):
     return str(get_number(num1)+get_number(num2))
@@ -39,7 +43,7 @@ def exponentiate(num, power):
 
 # input method; used when parsing loops
 def user_input():
-    return raw_input('>>> ')
+    return raw_input('>>> ').rstrip()
 
 in_method = None # input method; used when parsing loops
 fd = None # holds the program file if one provided
@@ -47,7 +51,7 @@ fd = None # holds the program file if one provided
 # input method; used when parsing loops
 def next_line():
     global fd
-    return fd.readline()
+    return fd.readline().rstrip()
 
 # performs a loop
 def loop(counter, until, step, actions):
@@ -57,21 +61,22 @@ def loop(counter, until, step, actions):
     upto = get_number(until)
 
     op = None # holds the comparison operation for the loop
-    if count == upto: # there is no reason to loop if the starting and final indecies are equal
+    # there is no reason to loop if the starting and final indecies are equal
+    if count == upto:
         return None
     elif count > upto: # use greater-than (>)
         op = operator.gt
     elif count < upto: # use less-than (<)
         op = operator.lt
-    
+
     # loop while the counter hasn't reached the final index
     while op(get_number(variables[counter]), upto):
         # evaluate each action in the "actions" list
         for action in actions:
-            evaluate(action, in_method)
+            evaluate(action)
 
         # advance the counter
-        evaluate(step, None)
+        evaluate(step)
 
 # list of commands and their purposes
 def commands():
@@ -85,9 +90,12 @@ def commands():
         '\n\tEXP variable, num, power      -- variable = num**power'
         '\n\n'
         'Looping:'
-        '\n\tLOOP counter, until, (step)   -- loop while "counter" (inclusive) doesn\'t overstep "until" (exclusive) following the rule set by "step"'
-        '\n\t                                 "counter" must have a value before used for "LOOP"'
-        '\n\t                                 "step" is an arithmetic operation; ex. "(ADD counter, counter, 1)" to increment by 1'
+        '\n\tLOOP counter, until, (step)   -- loop while "counter" (inclusive)'
+        'doesn\'t overstep "until" (exclusive) following the rule set by "step"'
+        '\n\t                                 "counter" must have a value'
+        'before used for "LOOP"'
+        '\n\t                                 "step" is an arithmetic operation; '
+        'ex. "(ADD counter, counter, 1)" to increment by 1'
         '\n\tEND                           -- signifies the end of the loop'
         '\n\n'
         'Other:'
@@ -103,19 +111,22 @@ def print_vars():
     for var in variables.keys():
         print '{0}:\t\t{1}'.format(var, variables[var])
 
-def too_many_vars():
+def max_vars():
     return len(variables) == 256
 
 # evaluate the passed in command
 def evaluate(command):
+    # tokenize the commmand
+    tokens = command.split(', ')
+    tokens.insert(1, tokens[0].split()[1])
+    tokens[0] = tokens[0].split()[0]
+
     if tokens[0] == 'HELP': # print the commands
         commands()
             
     global variables
-    # tokenize the commmand
-    tokens = command.split(' \t,')
 
-    if not too_many_vars():
+    if not max_vars():
         if tokens[0] == 'DEF': # define a variable
             variables[tokens[1]] = None if len(tokens) == 2 else tokens[2]
         elif tokens[0] == 'DEL': # delete a variable
@@ -132,6 +143,7 @@ def evaluate(command):
         elif tokens[0] == 'LOOP': # loop through an enclosed process
             # parse the step of the loop
             step = command.split('(')[1].rstrip()[:-1]
+
             # check if the step is valid
             if step.split()[0] not in ['ADD', 'SUB', 'MUL', 'DIV', 'EXP']:
                 print 'The step in the loop must be an arithmetic operation.'
@@ -166,6 +178,7 @@ def evaluate(command):
                 print 'The variable "{0}" does not exist.'.format(tokens[1])
         else:
             print 'You have created too many variables. Consider deleting some.'
+    return 0
 
 def main(argv):
     global in_method
@@ -179,12 +192,12 @@ def main(argv):
         in_method = next_line
         
         # read the program line-by-line until 'EXIT' is hit
-        command = fd.readline()
+        command = fd.readline().rstrip()
         while command != 'EXIT':
             # evaluate the line; if `None` is returned terminate the program
             if evaluate(command) == None:
                 break
-            command = fd.readline()
+            command = fd.readline().rstrip()
     else:
         print 'Input HELP to see the command list.'
 
@@ -192,10 +205,13 @@ def main(argv):
         in_method = user_input
 
         # while the inputted line is not 'EXIT'
-        while (command = raw_input('>>> ')) != 'EXIT':
+        command = raw_input('>>> ').rstrip()
+        while command != 'EXIT':
             # evaluate the line; if `None` is returned print out the list of commands
             if evaluate(command) == None:
                 commands()
+            
+            command = raw_input('>>> ').rstrip()
 
 
 if __name__ == "__main__":
